@@ -318,7 +318,7 @@ function Assert-WingetAvailable {
     }
 }
 
-function Ensure-WingetPackage {
+function Install-WingetPackageIfMissing {
     param(
         [Parameter(Mandatory = $true)]
         [string]$DisplayName,
@@ -363,7 +363,7 @@ function Ensure-WingetPackage {
     }
 }
 
-function Ensure-UbuntuWsl {
+function Install-UbuntuWslIfMissing {
     if (-not (Test-CommandAvailable -Name "wsl")) {
         throw "wsl.exe was not found. Enable WSL on Windows, then run this script again."
     }
@@ -435,7 +435,7 @@ function Test-MkcertRootInstalled {
     }
 }
 
-function Ensure-MkcertTrust {
+function Install-MkcertTrust {
     if (Test-MkcertRootInstalled) {
         Write-Host "mkcert local CA is trusted."
         return
@@ -492,7 +492,7 @@ function Test-LocalhostCertificate {
     }
 }
 
-function Ensure-LocalhostCertificates {
+function Initialize-LocalhostCertificates {
     $certDirectory = Join-Path $RepoRoot "docker\certs"
     $certificatePath = Join-Path $certDirectory "localhost.pem"
     $keyPath = Join-Path $certDirectory "localhost-key.pem"
@@ -501,7 +501,7 @@ function Ensure-LocalhostCertificates {
         [void](New-Item -ItemType Directory -Path $certDirectory -Force)
     }
 
-    Ensure-MkcertTrust
+    Install-MkcertTrust
 
     if (Test-LocalhostCertificate -CertificatePath $certificatePath -KeyPath $keyPath) {
         Write-Host "Localhost HTTPS certificates are present."
@@ -534,14 +534,14 @@ function Ensure-LocalhostCertificates {
     $script:LocalhostCertificatesChanged = $true
 }
 
-function Ensure-Prerequisites {
+function Initialize-Prerequisites {
     Write-Host "Checking local prerequisites..."
     Update-ProcessPath
 
-    Ensure-UbuntuWsl
-    Ensure-WingetPackage -DisplayName "Docker Desktop" -PackageId "Docker.DockerDesktop" -CommandName "docker"
-    Ensure-WingetPackage -DisplayName "Git" -PackageId "Git.Git" -CommandName "git"
-    Ensure-WingetPackage -DisplayName "Node.js LTS" -PackageId "OpenJS.NodeJS.LTS" -CommandName "node"
+    Install-UbuntuWslIfMissing
+    Install-WingetPackageIfMissing -DisplayName "Docker Desktop" -PackageId "Docker.DockerDesktop" -CommandName "docker"
+    Install-WingetPackageIfMissing -DisplayName "Git" -PackageId "Git.Git" -CommandName "git"
+    Install-WingetPackageIfMissing -DisplayName "Node.js LTS" -PackageId "OpenJS.NodeJS.LTS" -CommandName "node"
 
     if (-not (Test-CommandAvailable -Name "npm")) {
         throw "Node.js LTS is installed, but npm is not available. Restart PowerShell and run this script again."
@@ -549,8 +549,8 @@ function Ensure-Prerequisites {
 
     Write-Host "npm is installed."
 
-    Ensure-WingetPackage -DisplayName "mkcert" -PackageId "FiloSottile.mkcert" -CommandName "mkcert"
-    Ensure-LocalhostCertificates
+    Install-WingetPackageIfMissing -DisplayName "mkcert" -PackageId "FiloSottile.mkcert" -CommandName "mkcert"
+    Initialize-LocalhostCertificates
 }
 
 function Get-WordPressInstallStatus {
@@ -593,7 +593,7 @@ function Get-WordPressInstallStatus {
 }
 
 try {
-    Ensure-Prerequisites
+    Initialize-Prerequisites
     Import-DotEnv -Path (Join-Path $RepoRoot ".env")
 
     Write-Host "Starting Docker stack..."
