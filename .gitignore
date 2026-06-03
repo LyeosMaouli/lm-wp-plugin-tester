@@ -1,0 +1,27 @@
+# Dependencies
+**/node_modules/
+
+# Local plugin workspace
+plugins/*
+!plugins/.gitkeep
+
+# Generated runtime state
+logs/
+*.log
+docker/certs/*.pem
+!docker/certs/.gitkeep
+
+# OS / editor
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Local env (optional)
+.env
+.env.*
+!.env.example
