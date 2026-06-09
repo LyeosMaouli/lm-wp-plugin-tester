@@ -18,6 +18,12 @@ Edit `.env` and set a local admin password:
 WP_ADMIN_PASSWORD=YOUR_LOCAL_PASSWORD
 ```
 
+Allow local PowerShell scripts to run for your Windows user:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
 Then start the environment:
 
 ```powershell
