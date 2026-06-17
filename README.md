@@ -49,6 +49,12 @@ plugins\
     my-plugin.php
 ```
 
+Or link an existing plugin checkout into `plugins\` with a Windows junction:
+
+```powershell
+New-Item -ItemType Junction -Path .\plugins\my-plugin -Target C:\path\to\my-plugin
+```
+
 The whole `plugins\` directory is mounted into the containers at:
 
 ```text
