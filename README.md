@@ -55,7 +55,7 @@ The whole `plugins\` directory is mounted into the containers at:
 /var/www/html/wp-content/plugins
 ```
 
-Plugin activation is manual:
+Elementor is managed automatically by `.\start-local.ps1`: on every startup, the script attempts to install and activate the free WordPress.org Elementor plugin if needed. Other local plugin activation remains manual:
 
 ```powershell
 docker compose run --rm --user 33:33 -e HOME=/tmp wpcli wp plugin list
@@ -81,7 +81,7 @@ Open:
 - `https://localhost`
 - `https://localhost/wp-admin`
 
-If WordPress is already installed, the script starts the stack and skips the core install.
+If WordPress is already installed, the script starts the stack, skips the core install, and still makes sure Elementor is installed and active when possible.
 
 ## Debugging
 
@@ -107,7 +107,7 @@ docker compose down -v
 .\start-local.ps1
 ```
 
-After a reset, activate any local plugins again with WP-CLI or the WordPress admin.
+After a reset, `.\start-local.ps1` reinstalls/reactivates Elementor automatically. Activate any other local plugins again with WP-CLI or the WordPress admin.
 
 ## Verification
 

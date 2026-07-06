@@ -242,6 +242,42 @@ function Invoke-WpCliCapture {
     Invoke-DockerCapture -Arguments $dockerArguments
 }
 
+function Ensure-ElementorPlugin {
+    Write-Host "Ensuring Elementor is installed and active..."
+
+    $installedResult = Invoke-WpCliCapture -WpArguments @("wp", "--url=$Url", "plugin", "is-installed", "elementor")
+
+    if ($installedResult.ExitCode -ne 0) {
+        Write-Host "Elementor is not installed. Installing and activating Elementor..."
+        $installResult = Invoke-WpCliCapture -WpArguments @("wp", "--url=$Url", "plugin", "install", "elementor", "--activate")
+
+        if ($installResult.ExitCode -ne 0) {
+            Write-Warning "Elementor install/activation failed; startup will continue. Output: $($installResult.Output)"
+            return
+        }
+
+        Write-Host "Elementor installed and activated."
+        return
+    }
+
+    $activeResult = Invoke-WpCliCapture -WpArguments @("wp", "--url=$Url", "plugin", "is-active", "elementor")
+
+    if ($activeResult.ExitCode -eq 0) {
+        Write-Host "Elementor is already active."
+        return
+    }
+
+    Write-Host "Elementor is installed but inactive. Activating Elementor..."
+    $activateResult = Invoke-WpCliCapture -WpArguments @("wp", "--url=$Url", "plugin", "activate", "elementor")
+
+    if ($activateResult.ExitCode -ne 0) {
+        Write-Warning "Elementor activation failed; startup will continue. Output: $($activateResult.Output)"
+        return
+    }
+
+    Write-Host "Elementor activated."
+}
+
 function Update-ProcessPath {
     $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
     $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
@@ -623,6 +659,7 @@ try {
 
     if ($status -eq "Installed") {
         Write-Host "WordPress is already installed. Skipping core install."
+        Ensure-ElementorPlugin
         Write-Host "Web project URL: $Url"
         exit 0
     }
@@ -650,6 +687,7 @@ try {
     }
 
     Write-Host "WordPress installed successfully."
+    Ensure-ElementorPlugin
     Write-Host "Admin user: $AdminUser"
     Write-Host "Web project URL: $Url"
 } catch {
